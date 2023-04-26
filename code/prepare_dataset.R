@@ -8,8 +8,10 @@ dt_dir <- "/n/dominici_nsaph_l3/Lab/projects/medicaid_children_icd/data/individu
 dt_o <- fread(file.path(dt_dir,"disease_classification_demographics.csv"))
 anyDuplicated(dt_o) # check duplicated rows
 # > anyDuplicated(dt) # check duplicated rows
-# [1] 161
-## duplicated rows exist, unique the data
+# [1] 147
+# > anyDuplicated(dt[,c("admission_date","bene_id")])
+# [1] 410
+# ## duplicated rows exist, unique the data
 dt <- unique(dt_o)
 
 ## check data ----
@@ -80,6 +82,12 @@ cat("invalid ZIP percentage", 1-mean(dt[,zip_validity]))
 # invalid ZIP percentage 0.005042581
 
 ### race_ethnicity_code: need processing ----
+## check the zero portion
+dt[, rec_contain0:=race_ethnicity_code %like% "0"]
+sum(dt[,rec_contain0])/dim(dt)[1]
+setorder(dt[,.(count_rec0=sum(rec_contain0),
+               percent_rec=sum(rec_contain0)/.N), by = year],year)[]
+
 dt[,race_ethnicity_code:=as.factor(race_ethnicity_code)]
 levels(dt[,race_ethnicity_code])
 ## https://resdac.org/cms-data/variables/raceethnicity-msis
